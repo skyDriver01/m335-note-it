@@ -46,6 +46,7 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
+        <ThemedText type="subtitle">Type shii yurr</ThemedText>
     </ParallaxScrollView>
   );
 }
