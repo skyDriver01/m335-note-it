@@ -1,0 +1,15 @@
+name: "Run app"
+on: [push]
+
+jobs:
+  run-expo-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install npm dependencies
+      - run: npm install
+
+      - name: run expo app
+      - run: npx expo start
