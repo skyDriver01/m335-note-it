@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, FlatList, View, Button, Alert, TouchableOpacity, Text } from 'react-native';
+import { Image, StyleSheet, FlatList, View, Alert, TouchableOpacity, Text } from 'react-native';
 import * as SQLite from 'expo-sqlite';
-import * as ImagePicker from 'expo-image-picker';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useNavigation, useFocusEffect } from 'expo-router';
@@ -71,11 +70,25 @@ export default function HomeScreen() {
     }
   };
 
+  const confirmDelete = (id) => {
+    Alert.alert(
+      'Delete Note',
+      'Are you sure you want to delete this note?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', onPress: () => deleteNote(id), style: 'destructive' },
+      ]
+    );
+  };
+
   const renderItem = ({ item }) => {
     const noteImages = db.getAllSync(`SELECT * FROM images WHERE notes_id = ?`, [item.id]);
 
     return (
-      <TouchableOpacity onPress={() => navigation.navigate('noteScreen', { noteId: item.id })}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('noteScreen', { noteId: item.id })}
+        onLongPress={() => confirmDelete(item.id)}
+      >
         <ThemedView style={styles.noteContainer}>
           <ThemedText type="title">{item.title || "Untitled Note"}</ThemedText>
           <ThemedText type="subtitle">Created on: {new Date(item.creation_date).toLocaleDateString()}</ThemedText>
@@ -125,11 +138,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     marginBottom: 10,
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
   },
   addButton: {
     backgroundColor: '#007AFF',
