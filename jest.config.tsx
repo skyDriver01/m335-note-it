@@ -8,5 +8,6 @@ module.exports = {
   moduleNameMapper: {
     '^app/(.*)$': '<rootDir>/app/$1', // Map 'app/' alias to the 'app' directory at the project root
     '^components/(.*)$': '<rootDir>/components/$1', // Optional: Map components path if needed
+    'react-native-sqlite-storage': '<rootDir>/__mocks__/react-native-sqlite-storage.js' // Mock for react-native-sqlite-storage
   },
 };
