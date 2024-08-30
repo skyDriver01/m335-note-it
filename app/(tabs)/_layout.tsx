@@ -28,7 +28,7 @@ export default function TabLayout() {
         options={{
           title: 'Analytics',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'analytics' : 'analytics-outline'} color={color} />
+            <TabBarIcon name={focused ? 'Analytics' : 'analytics-outline'} color={color} />
           ),
         }}
       />
