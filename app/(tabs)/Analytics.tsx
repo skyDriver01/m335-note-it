@@ -1,102 +1,115 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
-
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import * as SQLite from 'expo-sqlite';
+import { useFocusEffect } from 'expo-router';
 
-export default function TabTwoScreen() {
+const db = SQLite.openDatabaseSync("Note-It");
+
+export default function AnalyticsScreen() {
+  const [todayNotesCount, setTodayNotesCount] = useState(0);
+  const [totalNotesCount, setTotalNotesCount] = useState(0);
+  const [notesByType, setNotesByType] = useState({});
+  const [updatedNotesCount, setUpdatedNotesCount] = useState(0);
+  const [totalImagesCount, setTotalImagesCount] = useState(0);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchAnalytics();
+    }, [])
+  );
+
+  const fetchAnalytics = () => {
+    try {
+      const todayDate = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+      // 1. Notes created today
+      const todayNotes = db.getAllSync(
+        `SELECT COUNT(*) as count FROM notes WHERE DATE(creation_date) = ?`,
+        [todayDate]
+      )[0].count;
+      setTodayNotesCount(todayNotes);
+
+      // 2. Total notes count
+      const totalNotes = db.getAllSync(`SELECT COUNT(*) as count FROM notes`)[0].count;
+      setTotalNotesCount(totalNotes);
+
+      // 3. Notes by type
+      const types = db.getAllSync(
+        `SELECT type, COUNT(*) as count FROM notes GROUP BY type`
+      );
+      const typeCount = types.reduce((acc, type) => {
+        acc[type.type] = type.count;
+        return acc;
+      }, {});
+      setNotesByType(typeCount);
+
+      // 4. Notes updated at least once
+      const updatedNotes = db.getAllSync(
+        `SELECT COUNT(*) as count FROM notes WHERE creation_date != modification_date`
+      )[0].count;
+      setUpdatedNotesCount(updatedNotes);
+
+      // 5. Total images count
+      const totalImages = db.getAllSync(`SELECT COUNT(*) as count FROM images`)[0].count;
+      setTotalImagesCount(totalImages);
+
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+    <ScrollView style={styles.container}>
+      <ThemedView style={styles.section}>
+        <ThemedText type="title">Analytics</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle">Notes Created Today</ThemedText>
+        <ThemedText>{todayNotesCount}</ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle">Total Notes</ThemedText>
+        <ThemedText>{totalNotesCount}</ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle">Notes by Type</ThemedText>
+        {Object.keys(notesByType).map((type) => (
+          <View key={type} style={styles.typeRow}>
+            <ThemedText>{type}:</ThemedText>
+            <ThemedText>{notesByType[type]}</ThemedText>
+          </View>
+        ))}
+      </ThemedView>
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle">Notes Updated At Least Once</ThemedText>
+        <ThemedText>{updatedNotesCount}</ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle">Total Images</ThemedText>
+        <ThemedText>{totalImagesCount}</ThemedText>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
   },
-  titleContainer: {
+  section: {
+    marginBottom: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+  },
+  typeRow: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
+    marginVertical: 5,
   },
 });
