@@ -1,6 +1,8 @@
 # Welcome to your Expo app 👋
 ## Team-members: Manuel Möri & Luka Nikolic
 
+### IF YOU WANT TO HAVE A LOOK AT THE APP THEN DOWNLOAD THE NOTE-IT.ZIP IN THE PROJECT FILES OR HERE THE LINK TO IT: https://github.com/skyDriver01/m335-note-it/blob/main/Note-it.zip
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
